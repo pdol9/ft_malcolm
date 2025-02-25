@@ -1,3 +1,5 @@
 *.o
 *.out
 resources/*
+config.mk
+ft_malcolm
