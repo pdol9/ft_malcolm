@@ -1,11 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include "malcolm.h"
 
 int main(int argc, char *argv[]) {
 
@@ -28,6 +21,9 @@ int main(int argc, char *argv[]) {
 	// wait for the ARP request (from target) requesting the source IP
 	// send a single ARP reply
 	//
+	// TODO:
+	// include libft as external dependency
+	// get string input into valid bytes and reverse
 	//
 	return 0;
 }
