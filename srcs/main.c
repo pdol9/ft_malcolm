@@ -1,7 +1,5 @@
 #include "malcolm.h"
 
-int main(int argc, char *argv[]) {
-
 	/* @parameters:
 	 * 
 	 ◦ source ip
@@ -10,20 +8,20 @@ int main(int argc, char *argv[]) {
 	 ◦ target mac address
 	 *
 	 */
-	if (argc != 5) {
-		fprintf(stderr, "Invalid number of parameters.\nProvide following:\n◦ source ip\n◦ source mac address\n◦ target ip\n◦ target mac address\n");
+
+int main(int argc, char *argv[]) {
+
+	if (validate_input(argv, argc) == 1)
 		return (EXIT_FAILURE);
-	}
-	for (int i = 1; i < 5; ++i) {
-		fprintf(stdout, "Accepted param: %d -> %s\n", i, argv[i]);
-	}
+
 	// TASKS:
 	// wait for the ARP request (from target) requesting the source IP
 	// send a single ARP reply
 	//
+
 	// TODO:
-	// include libft as external dependency
-	// get string input into valid bytes and reverse
+	// * go thru available interfaces
+	// * listen for broadcasted (ARP) requests
 	//
 	return 0;
 }

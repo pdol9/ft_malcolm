@@ -4,3 +4,5 @@
 resources/*
 config.mk
 ft_malcolm
+.gdb_history
+tags
