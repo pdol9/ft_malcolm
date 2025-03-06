@@ -31,8 +31,14 @@ fclean: clean
 
 re: fclean all
 
+q:
+	./$(NAME) $(ARG)
+
 test:
 	arp -a
+
+tcp:
+	sudo tcpdump -n -e -tttt arp
 
 $(LIBFT):
 	@$(MAKE) all -s -C $(LIBFT_DIR)
