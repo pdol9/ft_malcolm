@@ -1,13 +1,13 @@
 include config.mk
 
 # variables
-CFLAGS:= -g
+CFLAGS:= -g -Wall -Wextra -Werror
 NAME:= ft_malcolm
 DIR:= ./srcs
 LIBFT_DIR:= ./libft
 LIBFT:=$(LIBFT_DIR)/libft.a
 INC:=./inc
-HEADER:=./inc/malcolm.h
+HEADER:=./inc/ft_malcolm.h
 LIBFT_HEADER:=./libft/include
 SRCS:= main.c aux_functions.c
 OBJ= $(patsubst %.c, $(DIR)/%.o, $(SRCS))
@@ -17,7 +17,7 @@ all: $(LIBFT) $(NAME)
 
 $(NAME): $(OBJ)
 	$(CC) -I $(INC) -I $(LIBFT_HEADER) -o $@ $^ $(LIBFT)
-	./$(NAME) $(ARG)
+	sudo ./$(NAME) $(ARG)
 
 $(DIR)/%.o: $(DIR)/%.c $(HEADER)
 	$(CC) $(CFLAGS) -I $(INC) -I $(LIBFT_HEADER) -c $< -o $@
