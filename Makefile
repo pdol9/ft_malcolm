@@ -9,7 +9,7 @@ LIBFT:=$(LIBFT_DIR)/libft.a
 INC:=./inc
 HEADER:=./inc/ft_malcolm.h
 LIBFT_HEADER:=./libft/include
-SRCS:= main.c aux_functions.c
+SRCS:= main.c aux_functions.c interface.c
 OBJ= $(patsubst %.c, $(DIR)/%.o, $(SRCS))
 
 # build rules

@@ -1,16 +1,13 @@
 #ifndef FT_MALCOLM_H
 # define FT_MALCOLM_H
 
-# include <sys/ioctl.h>
-# include <sys/socket.h>
-# include <netinet/in.h>
 # include <arpa/inet.h>
-# include <netdb.h>
-# include <linux/if_packet.h>
-# include <linux/if_ether.h>
-# include <linux/if_arp.h>
 # include <ifaddrs.h>
-
+# include <linux/if_ether.h>
+# include <linux/if_link.h>
+# include <net/if.h>
+# include <linux/if_packet.h>
+# include <linux/if_arp.h>
 # include <sys/time.h>
 # include <sys/types.h>
 # include <unistd.h>
@@ -19,8 +16,6 @@
 # include <stdio.h>
 # include <stdint.h>
 # include "libft.h"
-
-# include <string.h>	// remove
 
 # define EXIT_ERROR		0x01
 
@@ -35,6 +30,7 @@
 # define MAC_LENGTH		0x06
 # define IPV4_LENGTH	0x04
 # define ETH2_HEADER_LEN 0x0e
+
 
 struct arp_header
 {
@@ -58,5 +54,6 @@ typedef struct s_addr {
 
 // function prototype
 int		validate_input(char **argv, int argc, t_addr *data);
+int		retrieve_interface(struct ifreq *ifr, int *ft_index);
 
 #endif
