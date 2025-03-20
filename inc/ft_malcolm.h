@@ -3,18 +3,13 @@
 
 # include <arpa/inet.h>
 # include <ifaddrs.h>
+# include <net/if.h>
 # include <linux/if_ether.h>
 # include <linux/if_link.h>
-# include <net/if.h>
 # include <linux/if_packet.h>
 # include <linux/if_arp.h>
-# include <sys/time.h>
 # include <sys/types.h>
-# include <unistd.h>
-
-# include <stdlib.h>
 # include <stdio.h>
-# include <stdint.h>
 # include "libft.h"
 
 # define EXIT_ERROR		0x01
@@ -31,7 +26,6 @@
 # define IPV4_LENGTH	0x04
 # define ETH2_HEADER_LEN 0x0e
 
-
 struct arp_header
 {
 	uint16_t	hardware_type;
@@ -46,14 +40,17 @@ struct arp_header
 };
 
 typedef struct s_addr {
-	uint8_t		mac_addr_src[6];
-	uint8_t		mac_addr_target[6];
+	uint8_t		mac_addr_src[MAC_LENGTH];
+	uint8_t		mac_addr_target[MAC_LENGTH];
+	uint8_t		ifc_mac[MAC_LENGTH];
 	uint8_t		ipv4_addr[2][sizeof(struct in_addr)];		// [0] -> src; [1] -> target
 	char		ipv4_name[2][INET_ADDRSTRLEN];
 }	t_addr;
 
 // function prototype
 int		validate_input(char **argv, int argc, t_addr *data);
-int		retrieve_interface(struct ifreq *ifr, int *ft_index);
+int		retrieve_interface_info(struct ifreq *ifr, int *ft_index, uint8_t ifc_mac[MAC_LENGTH]);
+int		recv_arp_repl(int arp_soc, uint8_t buffer[BUF_SIZE], struct arp_header *arp_resp, struct ethhdr *rcv_resp);
+void	print_MAC_addr(const char *str, uint8_t arr[MAC_LENGTH]);
 
 #endif

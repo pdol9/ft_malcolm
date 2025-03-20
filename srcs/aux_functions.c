@@ -28,18 +28,20 @@ static int	mac_pton(const char *str, uint8_t mac[6])
 
 int validate_input(char **argv, int argc, t_addr *data)
 {
+	// TODO
+	// add verbose functionality
 	if (argc != 5) {
 		fprintf(stderr, "Invalid number of parameters. Provide following arguments:\n <source ip> <source mac address> <target ip> <target mac address>\n");
 		return (-1);
 	}
 
-	// validate MAC input
+	/* validate MAC input */
 	if (ft_strlen(argv[2]) != 17 || ft_strlen(argv[4]) != 17) {
 		fprintf(stderr, "Invalid MAC address. Use the following format: aa:bb:cc:dd:ee:ff\n");
 		return (-1);
 	}
 
-	// validate MAC addr
+	/* validate MAC address */
 	if ((mac_pton(argv[2], data->mac_addr_src)) == EXIT_ERROR) {
 		fprintf(stderr, "Invalid MAC address. Use valid format: aa:bb:cc:dd:ee:ff\nInvalid input: %s\n", argv[2]);
 		return (-1);
@@ -48,11 +50,12 @@ int validate_input(char **argv, int argc, t_addr *data)
 		return (-1);
 	}
 
-	// validate IPv4 addr
+	/* validate IPv4 address */
 	int s;
 
 	for (int i = 1; i < 4; i += 2) {
-		int j = i / 3;				// set source or target (addr)
+		// set source or target (addr)
+		int j = i / 3;
 		s = inet_pton(AF_INET, argv[i], data->ipv4_addr[j]);
 		if (s <= 0) {
 			if (!s)
@@ -65,7 +68,8 @@ int validate_input(char **argv, int argc, t_addr *data)
 			perror("inet_ntop\n");
 			return (-1);
 		}
-		printf("IPv4: %s\n", data->ipv4_name[j]);
+		// --verbose
+		//printf("IPv4: %s\n", data->ipv4_name[j]);
 	}
 	return (0);
 }
