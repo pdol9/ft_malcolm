@@ -1,16 +1,22 @@
 include config.mk
 
 # variables
-CFLAGS:= -g -Wall -Wextra -Werror
-NAME:= ft_malcolm
-DIR:= ./srcs
-LIBFT_DIR:= ./libft
-LIBFT:=$(LIBFT_DIR)/libft.a
-INC:=./inc
-HEADER:=./inc/ft_malcolm.h
-LIBFT_HEADER:=./libft/include
-SRCS:= main.c aux_functions.c interface.c
-OBJ= $(patsubst %.c, $(DIR)/%.o, $(SRCS))
+NAME		:= ft_malcolm
+CFLAGS		:= -Wall -Wextra -Werror -g
+CC			:= cc
+
+# source file variables
+INC			:= ./inc
+HEADER		:= $(INC)/ft_malcolm.h
+DIR			:= ./srcs
+SRCS		:= main.c aux_functions.c interface.c
+OBJ			:= $(patsubst %.c, $(DIR)/%.o, $(SRCS))
+TRUE		= 0
+
+# dependencies
+LIBFT_DIR	:= ./libft
+LIBFT		:= $(LIBFT_DIR)/libft.a
+LIBFT_HEADER:= $(LIBFT_DIR)/include
 
 # build rules
 all: $(LIBFT) $(NAME)
@@ -20,7 +26,7 @@ $(NAME): $(OBJ)
 	sudo ./$(NAME) $(ARG)
 
 $(DIR)/%.o: $(DIR)/%.c $(HEADER)
-	$(CC) $(CFLAGS) -I $(INC) -I $(LIBFT_HEADER) -c $< -o $@
+	$(CC) $(CFLAGS) -I $(INC) -I $(LIBFT_HEADER) -c $< -o $@ -D VERBOSE=$(TRUE)
 
 clean:
 	rm -f $(OBJ)
@@ -31,14 +37,11 @@ fclean: clean
 
 re: fclean all
 
-q:
-	./$(NAME) $(ARG)
-
-test:
-	arp -a
-
 tcp:
 	sudo tcpdump -n -e -tttt arp
 
 $(LIBFT):
 	@$(MAKE) all -s -C $(LIBFT_DIR)
+
+bonus: TRUE=1
+bonus: clean all
