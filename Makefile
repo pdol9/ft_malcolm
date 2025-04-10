@@ -1,16 +1,17 @@
 include config.mk
+.PHONY: clean re fclean run insp bonus
 
 # variables
 NAME		:= ft_malcolm
 CFLAGS		:= -Wall -Wextra -Werror -g
-CC			:= cc
+CC		:= cc
 
 # source file variables
-INC			:= ./inc
+INC		:= ./inc
 HEADER		:= $(INC)/ft_malcolm.h
-DIR			:= ./srcs
-SRCS		:= main.c aux_functions.c interface.c
-OBJ			:= $(patsubst %.c, $(DIR)/%.o, $(SRCS))
+DIR		:= ./srcs
+SRCS		:= main.c aux_functions.c interface.c init.c broadcast.c
+OBJ		:= $(patsubst %.c, $(DIR)/%.o, $(SRCS))
 TRUE		= 0
 
 # dependencies
@@ -37,11 +38,21 @@ fclean: clean
 
 re: fclean all
 
-tcp:
-	sudo tcpdump -n -e -tttt arp
+run: $(NAME)
+	sudo ./$(NAME) $(ARG)
+
+insp:
+	sudo tcpdump -i wlp2s0 -vvv -S -xx 'arp'
 
 $(LIBFT):
 	@$(MAKE) all -s -C $(LIBFT_DIR)
 
+### bonus part ###
+
 bonus: TRUE=1
-bonus: clean all
+bonus: $(NAME)
+
+# test bonus part
+do: TRUE=1
+do: $(NAME)
+	sudo ./$(NAME) $(ARG)
