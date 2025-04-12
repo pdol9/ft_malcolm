@@ -1,66 +1,105 @@
 #include "ft_malcolm.h"
 
-inline void	print_MAC_addr(const char *str, uint8_t arr[MAC_LENGTH])
-{
-	printf("%s MAC address: ", str);
-	int i = 0;
-	for (; i < MAC_LENGTH - 1; ++i)
-		printf("%02x%c", (arr[i]), ':');
-	printf("%02x", (arr[i]));
-}
+/* get IP address of the interface(s) */
 
-int retrieve_interface_info(struct ifreq *ifr, int *ft_index, uint8_t ifc_mac[MAC_LENGTH])
+static
+void	ifc_addr_info(t_addr *addr_data)
 {
 	struct ifaddrs *ifaddr;
+	char ip[INET_ADDRSTRLEN];
+
 	if (getifaddrs(&ifaddr) == -1) {
 		perror("getifaddrs");
-		return (-1);
+		fprintf(stderr, "\nFailed at retrieving IP address of source interfaces.\n"
+				"Exiting ...\n");
+		return ;
+	}
+	for (struct ifaddrs *ifa = ifaddr; ifa != NULL;	ifa = ifa->ifa_next)
+	{
+		if (ifa->ifa_addr->sa_family == AF_INET)
+		{
+			struct sockaddr_in *addr = (struct sockaddr_in *)ifa->ifa_addr;
+
+			if (inet_ntop(AF_INET, &addr->sin_addr, ip, INET_ADDRSTRLEN) == NULL) {
+				fprintf(stderr, "\nFailed to retrieve IP address"
+						" of source host.\nExiting ...\n");
+				return ;
+			}
+
+			// Skip loopback address
+			char *localhost = "127.0.0.1";
+			if (ft_strncmp(ip, localhost, ft_strlen(localhost)) != 0) {
+				printf("\tInterface: %s -> IP address: %s\n", ifa->ifa_name, ip);
+				break;
+			}
+		}
+	}
+	print_MAC_addr("\tMAC address of source host: ", ':', addr_data->ifc_mac);
+	printf("\n");
+	freeifaddrs(ifaddr);
+
+#if VERBOSE == 1
+	hostname_info(addr_data->ipv4_name[1], ip);
+#endif
+}
+
+int	retrieve_interface_info(t_addr *addr_data)
+{
+	struct ifaddrs *ifaddr, *active_ifc;
+	struct rtnl_link_stats *stats;
+	uint32_t max_tx_bytes = 0;
+
+	if (getifaddrs(&ifaddr) == -1) {
+		perror("getifaddrs");
+		return (ERROR);
 	}
 
-	uint32_t max_rx_bytes = 0;
-	struct ifaddrs *if_tmp;
-	struct rtnl_link_stats *stats;
-
-	printf("Retrieving host's interface info ...\n");
+	printf("Retrieving host's interfaces' info ...\n");
 	for (struct ifaddrs *ifa = ifaddr; ifa != NULL;	ifa = ifa->ifa_next)
 	{
 		if (ifa->ifa_addr->sa_family == AF_PACKET && ifa->ifa_data != NULL)
 		{
 			stats = ifa->ifa_data;
-			/*  --verbose  */
-//			printf("* Found interface: %-8s \n", ifa->ifa_name);
-//			printf("\ttx_packets = %10u;   rx_packets = %10u\n"
-//					"\ttx_bytes   = %10u;   rx_bytes   = %10u\n"
-//					"\ttx_dropped = %10u;   rx_dropped = %10u\n"
-//					"\tmulticast  = %10u;   collisions = %10u\n\n",
-//					stats->tx_packets, stats->rx_packets,
-//					stats->tx_bytes, stats->rx_bytes,
-//					stats->tx_dropped, stats->rx_dropped,
-//					stats->multicast, stats->collisions);
-			if (max_rx_bytes < stats->rx_bytes) {
-				max_rx_bytes = stats->rx_bytes;
-				if_tmp = ifa;
+
+#if VERBOSE == 1
+			// available interfaces:
+			printf("* Found interface: %-8s \n", ifa->ifa_name);
+			printf("\ttx_packets = %10u;   rx_packets = %10u\n"
+					"\ttx_bytes   = %10u;   rx_bytes   = %10u\n"
+					"\ttx_dropped = %10u;   rx_dropped = %10u\n"
+					"\tmulticast  = %10u;   collisions = %10u\n\n",
+					stats->tx_packets, stats->rx_packets,
+					stats->tx_bytes, stats->rx_bytes,
+					stats->tx_dropped, stats->rx_dropped,
+					stats->multicast, stats->collisions);
+#endif
+
+			if (max_tx_bytes < stats->rx_bytes)
+			{
+				max_tx_bytes = stats->tx_bytes;
+				active_ifc = ifa;
 			}
 		}
 	}
-	//printf("Found available interface: %-8s \n", if_tmp->ifa_name);
-	//printf("\ttx_packets = %10u;   rx_packets = %10u\n"
-	//	"\ttx_bytes   = %10u;   rx_bytes   = %10u\n"
-	//	"\ttx_dropped = %10u;   rx_dropped = %10u\n"
-	//	"\tmulticast  = %10u;   collisions = %10u\n----------------\n",
-	//	stats->tx_packets, stats->rx_packets,
-	//	stats->tx_bytes, stats->rx_bytes,
-	//	stats->tx_dropped, stats->rx_dropped,
-	//	stats->multicast, stats->collisions);
+	printf("Found available interface: %-8s \n", active_ifc->ifa_name);
 
-	ft_strlcpy(ifr->ifr_name, if_tmp->ifa_name, ft_strlen(if_tmp->ifa_name));
-	*ft_index = if_nametoindex(if_tmp->ifa_name);
-	struct sockaddr_ll *s = (struct sockaddr_ll*)if_tmp->ifa_addr;
+	int if_index = if_nametoindex(active_ifc->ifa_name);
+	if (if_index == -1) {
+		perror("Failed to retrieve interface index: ");
+		return (ERROR);
+	}
+
+#if VERBOSE == 1
+	printf("Success: Interface index retrieved: -> %d\n", if_index);
+#endif
+
+	/* get MAC address of the interface */
+	struct sockaddr_ll *s = (struct sockaddr_ll*)active_ifc->ifa_addr;
 	for (int i = 0; i < s->sll_halen; i++)
-		ifc_mac[i] = s->sll_addr[i];
+		addr_data->ifc_mac[i] = s->sll_addr[i];
 
-	/* print interface MAC address */
-	//print_MAC_addr("Source interface", s->sll_addr);
 	freeifaddrs(ifaddr);
-	return (0);
+	ifc_addr_info(addr_data);
+
+	return (if_index);
 }
