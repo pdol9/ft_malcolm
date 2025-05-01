@@ -1,5 +1,7 @@
 # ft_malcolm
 
+*** WIP ***
+
 ## Introduction
 
 This is a networking project, based on ARP and 2nd (Data Link) Layer of OSI model.
@@ -8,7 +10,7 @@ modified ARP and Ethernet headers. As such it also serves as an introduction to
 `man in the middle attack`.
 
 Goal of the assignment is to see an entry of attacker's spoofed IP and MAC
-addresses in the ARP table on target host.
+addresses in the ARP table on target host machine.
 
 ### Description
 
@@ -25,6 +27,10 @@ ARP Table.
 To compile the program, run:
 ```bash
 make
+```
+```bash
+# to see additional info like verbose output of ETH / ARP header
+make bonus
 ```
 
 ## Usage
@@ -51,12 +57,12 @@ over socket.
 
 * ```ping <IP address>```
 
-* ```sudo tcpdump -i eth0 ...```
+* ```sudo tcpdump -i <interface> ...```
 
 * ```sudo arp-scan --localnet```
 
-* ```sudo arping -b -I wlp2s0 192.168.178.1```
+* ```sudo arping -b -I <interface> <IP address>```
 
-* ```sudo nmap -sn 192.168.1.0/24```
+* ```sudo nmap -sn <IP address>/24```
 
-* WIRESHARK
+* Wireshark

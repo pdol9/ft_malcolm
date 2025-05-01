@@ -1,4 +1,4 @@
-include config.mk
+include args.mk
 .PHONY: clean re fclean run insp bonus
 
 # variables
@@ -11,26 +11,26 @@ INC		:= ./inc
 HEADER		:= $(INC)/ft_malcolm.h
 DIR		:= ./srcs
 SRCS		:= main.c aux_functions.c interface.c init.c broadcast.c
+BONUS_SRC	:= hostname.c verbose_out.c
 OBJ		:= $(patsubst %.c, $(DIR)/%.o, $(SRCS))
 TRUE		= 0
 
 # dependencies
 LIBFT_DIR	:= ./libft
 LIBFT		:= $(LIBFT_DIR)/libft.a
-LIBFT_HEADER:= $(LIBFT_DIR)/include
+LIBFT_HEADER	:= $(LIBFT_DIR)/include
 
 # build rules
 all: $(LIBFT) $(NAME)
 
 $(NAME): $(OBJ)
 	$(CC) -I $(INC) -I $(LIBFT_HEADER) -o $@ $^ $(LIBFT)
-	sudo ./$(NAME) $(ARG)
 
 $(DIR)/%.o: $(DIR)/%.c $(HEADER)
 	$(CC) $(CFLAGS) -I $(INC) -I $(LIBFT_HEADER) -c $< -o $@ -D VERBOSE=$(TRUE)
 
 clean:
-	rm -f $(OBJ)
+	rm $(DIR)/*.o
 
 fclean: clean
 	rm -f $(NAME)
@@ -41,18 +41,19 @@ re: fclean all
 run: $(NAME)
 	sudo ./$(NAME) $(ARG)
 
+# inspect packages
 insp:
-	sudo tcpdump -i wlp2s0 -vvv -S -xx 'arp'
+	sudo tcpdump -i "$$(ip -o addr show | awk '/inet .* brd/ {print $$2}' | head -n1)" -vvv -S -xx arp
 
 $(LIBFT):
 	@$(MAKE) all -s -C $(LIBFT_DIR)
 
-### bonus part ###
 
-bonus: TRUE=1
-bonus: $(NAME)
+###	bonus section	###
+bonus:
+	$(MAKE) TRUE="1" SRCS="$(SRCS) $(BONUS_SRC)" all
 
 # test bonus part
-do: TRUE=1
-do: $(NAME)
+do:
+	$(MAKE) TRUE="1" SRCS="$(SRCS) $(BONUS_SRC)" all
 	sudo ./$(NAME) $(ARG)

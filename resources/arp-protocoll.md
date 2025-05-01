@@ -9,7 +9,7 @@
                 48 bits                             48 bits                         16 bits                 -> Payload : Data             32 bits
 
 * Ethernet II Frame is the container used to send different protocols like IPv4, ARP, IPv6, etc. (look at the end of the file for list)
-- EtherType is a two-octet field in an Ethernet frame. It is used to indicate which protocol is encapsulated in the payload of the frame and is used at the receiving end by the data link layer to determine how the payload is processed
+- EtherType is a two-octet field in an Ethernet frame. It is used to indicate which protocol is encapsulated in the payload of the frame and is used at the receiving end by the data link layer to determine how the payload is processed.
 - 0x0806 EtherType value is used to identify ARP frames.
 
 
