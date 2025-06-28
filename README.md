@@ -15,12 +15,12 @@ addresses in the ARP table on target host machine.
 ### Description
 
 Program uses raw socket so that it can access and send modified ARP / Ethernet
-headers. Normally, when sending packets via socket, the OS automatically adds
-headers (i.e., TCP, UDP, IP, Ethernet). It then sends an ARP request which is
-part of broadcast frame. In this case an ARP request is sent to each host in
-LAN. Only the owner of targeted IP replies to (spoofed) IP address. After target
-host receives the physical address of attacker's IP, it creates an entry in its
-ARP Table.
+headers. Normally, when sending packets via socket, an operating system adds
+headers by default (i.e., TCP, UDP, IP, Ethernet).
+
+It then sends an ARP request which is part of broadcast frame. In this case ARP
+request is sent to each host in LAN. Only the target host replies to source
+(spoofed) IP address, which results in creating / updating entry in its ARP Table.
 
 ## Installation
 
@@ -29,7 +29,8 @@ To compile the program, run:
 make
 ```
 ```bash
-# to see additional info like verbose output of ETH / ARP header
+# to display additional info about LAN, like available network interfaces,
+# ETH / ARP header info, etc. run:
 make bonus
 ```
 
@@ -37,11 +38,11 @@ make bonus
 
 Provide following parameters to the executable.
 ```bash
-./ft_malcolm source_ip source_mac_address target_ip target_mac_address
+./ft_malcolm <source_ip> <source_mac_address> <target_ip> <target_mac_address>
 ```
 Using command below we verify ARP table on target host machine.
 ```bash
-arp -a
+arp -a      # or arp -e
 ```
 
 ```bash

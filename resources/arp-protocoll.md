@@ -4,11 +4,11 @@
 
 ### Ethernet II Frame: (including ARP structure)
 +-----------------------------------+---------------------------------+-----------------------------+-------------------------------+-----------------+
-|   Dest MAC (FF:FF:FF:FF:FF:FF)    |    Src MAC (1A:2B:3C:4D:5E:6F)  |     EtherType (0x0806)      |   ARP Packet (28 bytes)       |   CRC checksum  |
+|   Dest MAC (FF:FF:FF:FF:FF:FF)    |    Src MAC (1A:2B:3C:4D:5E:6F)  |     EtherType (0x0806)      |  ARP Packet (Payload : Data)  |   CRC checksum  |
 +-----------------------------------+---------------------------------+-----------------------------+-------------------------------+-----------------+
-                48 bits                             48 bits                         16 bits                 -> Payload : Data             32 bits
+                48 bits                             48 bits                         16 bits                     28 bytes                  32 bits
 
-* Ethernet II Frame is the container used to send different protocols like IPv4, ARP, IPv6, etc. (look at the end of the file for list)
+* Ethernet II Frame is the container used to send different protocols like IPv4, ARP, IPv6, etc. (full list at the bottom)
 - EtherType is a two-octet field in an Ethernet frame. It is used to indicate which protocol is encapsulated in the payload of the frame and is used at the receiving end by the data link layer to determine how the payload is processed.
 - 0x0806 EtherType value is used to identify ARP frames.
 
@@ -18,7 +18,7 @@
 * ARP Packet is a protocol that is encapsulated inside an Ethernet II frame when transmitted over Ethernet.
 
 ### Address Resolution Protocol (ARP) Overview
-                       Description
+                        Description
 Protocol Type	        - ARP (Address Resolution Protocol)
 Purpose	                - Resolves IP addresses to MAC addresses in a local network (Layer 2)
 Network Layer	        - Data Link Layer (Layer 2)
@@ -27,16 +27,16 @@ Common Use Case	        - Converts an IPv4 address to a MAC address in LAN commu
 
 ### ARP Packet Structure
 
-                	Size (Bytes)	Description
-Hardware Type	       ->  2	     * Specifies network type (Ethernet = 0x0001)
-Protocol Type	       ->  2	     * Specifies protocol (IPv4 = 0x0800)
-Hardware Size	       ->  1	     * Length of MAC address (6 for Ethernet)
-Protocol Size	       ->  1	     * Length of IP address (4 for IPv4)
-Opcode	               ->  2	     * Request (1), Reply (2)
-Sender MAC	           ->  6	     * MAC address of sender
-Sender IP	           ->  4	     * IP address of sender
-Target MAC	           ->  6	     * MAC address of receiver (set to 00:00:00:00:00:00 in request)
-Target IP	           ->  4	     * IP address of receiver
+                	    Size (Bytes) 	Description
+Hardware Type	       ->  2	        * Specifies network type (Ethernet = 0x0001)
+Protocol Type	       ->  2	        * Specifies protocol (IPv4 = 0x0800)
+Hardware Size	       ->  1	        * Length of MAC address (6 for Ethernet)
+Protocol Size	       ->  1	        * Length of IP address (4 for IPv4)
+Opcode	               ->  2	        * Request (1), Reply (2)
+Sender MAC	       ->  6	        * MAC address of sender
+Sender IP	       ->  4	        * IP address of sender
+Target MAC	       ->  6	        * MAC address of receiver (set to 00:00:00:00:00:00 in request)
+Target IP	       ->  4	        * IP address of receiver
 => 48 bits
 
 ### Inside ARP Packet:
@@ -102,7 +102,7 @@ Target IP	           ->  4	     * IP address of receiver
 0x8204 	QNX Qnet
 0x86DD 	Internet Protocol Version 6 (IPv6)
 0x8808 	Ethernet flow control
-0x8809 	Ethernet Slow Protocols[11] such as the Link Aggregation Control Protocol (LACP)
+0x8809 	Ethernet Slow Protocols such as the Link Aggregation Control Protocol (LACP)
 0x8819 	CobraNet
 0x8847 	MPLS unicast
 0x8848 	MPLS multicast
@@ -115,7 +115,7 @@ Target IP	           ->  4	     * IP address of receiver
 0x88A2 	ATA over Ethernet
 0x88A4 	EtherCAT Protocol
 0x88A8 	Service VLAN tag identifier (S-Tag) on Q-in-Q tunnel
-0x88AB 	Ethernet Powerlink[citation needed]
+0x88AB 	Ethernet Powerlink
 0x88B8 	GOOSE (Generic Object Oriented Substation event)
 0x88B9 	GSE (Generic Substation Events) Management Services
 0x88BA 	SV (Sampled Value Transmission)
@@ -136,7 +136,7 @@ Target IP	           ->  4	     * IP address of receiver
 0x891D 	TTEthernet Protocol Control Frame (TTE)
 0x893a 	1905.1 IEEE Protocol
 0x892F 	High-availability Seamless Redundancy (HSR)
-0x9000 	Ethernet Configuration Testing Protocol[12]
+0x9000 	Ethernet Configuration Testing Protocol
 0xF1C1 	Redundancy Tag (IEEE 802.1CB Frame Replication and Elimination for Reliability) 
 
 https://en.wikipedia.org/wiki/Ethernet_frame#Ethernet_II
