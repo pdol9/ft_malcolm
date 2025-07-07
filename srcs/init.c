@@ -2,9 +2,10 @@
 
 int	init_data(t_addr *addr_data)
 {
-	printf("Entering initialiation phase ...\n");
-	int if_index = retrieve_interface_info(addr_data);
-	if (if_index == -1)
+	fprintf(stdout, "Entering initialiation phase ...\n");
+
+	int if_index = retrieve_LAN_info(addr_data);
+	if (if_index == ERROR)
 		return (ERROR);
 
 	/* Buffer to receive and store packet information */
