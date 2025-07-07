@@ -14,6 +14,7 @@
 # include "libft.h"
 
 # define ERROR			0x01
+# define MAX_IFACES		32
 
 // ARP definitions
 # define PROTO_ARP		0x0806
@@ -24,8 +25,6 @@
 # define MAC_LENGTH		6
 # define IPV4_LENGTH		4
 # define ETH_HEADER_LEN		14
-
-# define IPV4_STR		INET_ADDRSTRLEN
 
 struct arp_header
 {
@@ -38,6 +37,16 @@ struct arp_header
 	uint8_t		sender_ip[IPV4_LENGTH];
 	uint8_t		target_mac[MAC_LENGTH];
 	uint8_t		target_ip[IPV4_LENGTH];
+};
+
+struct iface_info {
+	char		name[IFNAMSIZ];
+	char		ipv4[INET_ADDRSTRLEN];
+	char		ipv6[INET6_ADDRSTRLEN];
+	uint8_t		mac[6];
+	bool		has_ipv4;
+	bool		has_ipv6;
+	bool		is_up;
 };
 
 typedef struct s_addr {
@@ -54,13 +63,12 @@ typedef struct s_addr {
 }	t_addr;
 
 // function prototype
-int		validate_input(char **argv, int argc, t_addr *data);
-int		retrieve_interface_info(t_addr *addr_data);
-int		broadcast(t_addr *addr_data);
-int		init_data(t_addr *addr_data);
-int		arp_reply(t_addr *addr_data);
-void		print_MAC_addr(const char *str, char ch, uint8_t arr[MAC_LENGTH]);
-void		hostname_info(char target_ip[IPV4_STR], char source_ip[IPV4_STR]);
-void		verbose_header_info(t_addr *addr_data);
+int	validate_input(char **argv, int argc, t_addr *data);
+int	retrieve_LAN_info(t_addr *addr_data);
+int	broadcast(t_addr *addr_data);
+int	init_data(t_addr *addr_data);
+int	arp_reply(t_addr *addr_data);
+void	print_MAC_addr(const char *str, char ch, uint8_t arr[MAC_LENGTH]);
+void	verbose_header_info(t_addr *addr_data);
 
 #endif
