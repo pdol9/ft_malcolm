@@ -2,8 +2,8 @@
 
 /******************************************************************************/
 
-/* traverse through linked list which contains nodes with info about interfaces;
- * return index on a name match to update missing info (IPv4 / IPv6 / MAC);
+/* traverse through linked list which contains nodes about interface info;
+ * return an index for a name match, to update missing info (IPv4 / IPv6 / MAC);
  */
 
 static
@@ -18,8 +18,8 @@ int add_or_update_ifc(struct iface_info *infos, int *count, const char *name)
 	return (*count)++;
 }
 
-/* when linked list contains a node with MAC info about interface;
- * store target's MAC address after validating it;
+/* store data if linked list contains a node with MAC info about interface;
+ * validate target's MAC after retrieving info;
  */
 
 static
@@ -45,7 +45,7 @@ void	mac_info(struct ifaddrs *ifa, struct ifaddrs **target_mac_ifc,
 		addr_data->ifc_mac[i] = ifc_addr->sll_addr[i];
 }
 
-/* when linked list contains a node with IPv4 info about interface;
+/* store data if linked list contains a node with IPv4 info about interface;
  * validate target's IP after retrieving info;
  */
 
@@ -76,9 +76,7 @@ void	ipv4_info(struct ifaddrs *ifa, struct ifaddrs **target_ip_ifc,
 	*target_ip_ifc = ifa;
 }
 
-/* when linked list contains a node with IPv6 info about interface;
- * store info;
- */
+/* store data if linked list contains a node with IPv6 info about interface */
 
 static
 void	ipv6_info(struct ifaddrs *ifa, struct iface_info *infos)
@@ -94,25 +92,6 @@ void	ipv6_info(struct ifaddrs *ifa, struct iface_info *infos)
 	else
 		infos->is_up = true;
 	infos->has_ipv6 = true;
-}
-
-/* verbose output of LAN info */
-
-static
-void	display_LAN_info(int iface_count, struct iface_info *infos, char *ipv_type)
-{
-	for (int i = 0; i < iface_count; ++i)
-	{
-		fprintf(stdout, "   Interface %-16s ", infos[i].name);
-		if (infos[i].is_up == false)
-			fprintf(stdout, "%-34s", "(IP):   N/A - status: [DOWN]");
-		else if (ft_strncmp(ipv_type, "IPv4", 4) == 0 && infos[i].has_ipv4)
-			fprintf(stdout, "(IPv4): %-26s", infos[i].ipv4);
-		else if (ft_strncmp(ipv_type, "IPv6", 4) == 0 && infos[i].has_ipv6)
-			fprintf(stdout, "(IPv6): %-26s", infos[i].ipv6);
-		print_MAC_addr(" :: MAC: ", ':', infos[i].mac);
-		fprintf(stdout, "\n");
-	}
 }
 
 /* check that target's IP and MAC adresseses are present on LAN;
@@ -153,7 +132,8 @@ int	retrieve_LAN_info(t_addr *addr_data)
 	struct ifaddrs *ifaddr, *target_ip_ifc = NULL, *target_mac_ifc = NULL;
 	int iface_count = 0;
 
-	if (getifaddrs(&ifaddr) == -1) {
+	if (getifaddrs(&ifaddr) == -1)
+	{
 		perror("getifaddrs");
 		return (ERROR);
 	}

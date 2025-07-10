@@ -5,12 +5,12 @@
 ## Introduction
 
 This is a networking project, based on ARP and 2nd (Data Link) Layer of OSI model.
-Purpose of the project is to carry out spoofing attack on a target host using
+Purpose of this project is to carry out spoofing attack on a target machine using
 modified ARP and Ethernet headers. As such it also serves as an introduction to
 `man in the middle attack`.
 
 Goal of the assignment is to see an entry of attacker's spoofed IP and MAC
-addresses in the ARP table on target host machine.
+address in the ARP table on target machine.
 
 ### Description
 
@@ -19,7 +19,7 @@ headers. Normally, when sending packets via socket, an operating system adds
 headers by default (i.e., TCP, UDP, IP, Ethernet).
 
 It then sends an ARP request which is part of broadcast frame. In this case ARP
-request is sent to each host in LAN. Only the target host replies to source
+request is sent to each host in LAN. Only the target machine replies to source
 (spoofed) IP address, which results in creating / updating entry in its ARP Table.
 
 ## Installation

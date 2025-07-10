@@ -11,7 +11,7 @@ INC		:= ./inc
 HEADER		:= $(INC)/ft_malcolm.h
 DIR		:= ./srcs
 SRCS		:= main.c aux_functions.c interface.c init.c broadcast.c
-BONUS_SRC	:= verbose_out.c
+BONUS_SRC	:= verbose_out.c LAN_info.c
 OBJ		:= $(patsubst %.c, $(DIR)/%.o, $(SRCS))
 TRUE		= 0
 

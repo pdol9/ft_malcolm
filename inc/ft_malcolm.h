@@ -70,5 +70,6 @@ int	init_data(t_addr *addr_data);
 int	arp_reply(t_addr *addr_data);
 void	print_MAC_addr(const char *str, char ch, uint8_t arr[MAC_LENGTH]);
 void	verbose_header_info(t_addr *addr_data);
+void	display_LAN_info(int iface_count, struct iface_info *infos, char *ipv_type);
 
 #endif
