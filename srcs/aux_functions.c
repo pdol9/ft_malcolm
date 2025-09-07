@@ -1,14 +1,16 @@
+#include "libft.h"
 #include "ft_malcolm.h"
 
+/* print MAC address to the standard output */
+
 inline
-void	print_MAC_addr(const char *str, char ch, uint8_t arr[MAC_LENGTH])
+void	print_MAC_addr(const char *msg, char ch, uint8_t arr[MAC_LENGTH])
 {
-	printf("%s", str);
-	int i = 0;
-	for (; i < MAC_LENGTH - 1; ++i)
-		printf("%02x%c", (arr[i]), ch);
-	printf("%02x", (arr[i]));
+	fprintf(stdout, "%s %02x%c%02x%c%02x%c%02x%c%02x%c%02x",
+			msg, arr[0],ch, arr[1],ch, arr[2],ch, arr[3],ch, arr[4],ch, arr[5]);
 }
+
+/* convert MAC address from text to binary form */
 
 static
 int	mac_pton(const char *str, uint8_t mac[6])
@@ -39,16 +41,27 @@ int	mac_pton(const char *str, uint8_t mac[6])
 
 int validate_input(char **argv, int argc, t_addr *data)
 {
-	if (argc != 5) {
+	if (argc != 5)
+	{
 		fprintf(stderr, "Invalid number of parameters. Provide following"
-				" arguments:\n <source ip> <source mac address>"
-				" <target ip> <target mac address>\n");
+				" arguments:\n <source IP> <source MAC address>"
+				" <target IP> <target MAC address>\n");
 		return (ERROR);
 	}
-	printf("Start of the program!\nValidating input parameters ...\n");
 
-	/* validate MAC input */
-	if (ft_strlen(argv[2]) != 17 || ft_strlen(argv[4]) != 17) {
+#if DEBUG == 1
+	fprintf(stdout, "** Debug mode enabled. **\n");
+#endif
+
+#if VERBOSE == 1
+	fprintf(stdout, "** Verbose mode enabled. **\n");
+#endif
+	fprintf(stdout, "Start of the program!\nValidating input parameters ...\n");
+
+	//TODO: check error testing
+	/* validate MAC format */
+	if (ft_strlen(argv[2]) != 17 || ft_strlen(argv[4]) != 17)
+	{
 		fprintf(stderr, "Invalid MAC address. Use the following format:"
 				" aa:bb:cc:dd:ee:ff\n");
 		return (ERROR);
@@ -56,7 +69,8 @@ int validate_input(char **argv, int argc, t_addr *data)
 
 	/* validate MAC address */
 	if ((mac_pton(argv[2], data->mac_addr_src) == ERROR)
-		|| (mac_pton(argv[4], data->mac_addr_target)) == ERROR) {
+		|| (mac_pton(argv[4], data->mac_addr_target)) == ERROR)
+	{
 		fprintf(stderr, "Invalid MAC address. Use valid format: "
 				"aa:bb:cc:dd:ee:ff\n");
 		return (ERROR);
@@ -72,12 +86,12 @@ int validate_input(char **argv, int argc, t_addr *data)
 		s = inet_pton(AF_INET, argv[i], data->ipv4_addr[j]);
 		if (s <= 0)
 		{
-			if (!s) fprintf(stderr, "IP address not in presentation format\n");
-			else perror("IP address - inet_pton: ");
+			fprintf(stderr, "unknown host or invalid IP address: (%s)\n", argv[i]);
 			return (ERROR);
 		}
-		if (inet_ntop(AF_INET, data->ipv4_addr[j], data->ipv4_name[j], INET_ADDRSTRLEN) == NULL) {
-			perror("IP address - inet_pton: ");
+		if (inet_ntop(AF_INET, data->ipv4_addr[j], data->ipv4_name[j], INET_ADDRSTRLEN) == NULL)
+		{
+			fprintf(stderr, "unknown host or invalid IP address: (%s)\n", argv[i]);
 			return (ERROR);
 		}
 	}

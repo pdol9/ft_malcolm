@@ -1,6 +1,9 @@
+#include "libft.h"
 #include "ft_malcolm.h"
 
-/* verbose output of LAN info */
+void	print_MAC_addr(const char *msg, char ch, uint8_t arr[MAC_LENGTH]);
+
+/* verbose output of host level LAN information */
 
 void	display_LAN_info(int iface_count, struct iface_info *infos, char *ipv_type)
 {
@@ -8,7 +11,7 @@ void	display_LAN_info(int iface_count, struct iface_info *infos, char *ipv_type)
 	{
 		if (infos[i].is_up == false && infos[i].has_ipv6 == true)
 			continue ;
-		fprintf(stdout, "   Interface %-16s ", infos[i].name);
+		fprintf(stdout, "   Interface %-16s ", infos[i].ifc_name);
 		if (infos[i].is_up == false)
 			fprintf(stdout, "%-34s", "(IP):   N/A - status: [DOWN]");
 		else if (ft_strncmp(ipv_type, "IPv4", 4) == 0 && infos[i].has_ipv4)

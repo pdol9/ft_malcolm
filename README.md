@@ -18,9 +18,7 @@ Program uses raw socket so that it can access and send modified ARP / Ethernet
 headers. Normally, when sending packets via socket, an operating system adds
 headers by default (i.e., TCP, UDP, IP, Ethernet).
 
-It then sends an ARP request which is part of broadcast frame. In this case ARP
-request is sent to each host in LAN. Only the target machine replies to source
-(spoofed) IP address, which results in creating / updating entry in its ARP Table.
+TODO: write a concise process of spoofing according to the project's requirements
 
 ## Installation
 

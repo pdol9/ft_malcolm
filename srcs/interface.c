@@ -1,62 +1,52 @@
+#include "libft.h"
 #include "ft_malcolm.h"
+
+int	retrieve_host_LAN_info(t_addr *addr_data);
+void	display_LAN_info(int iface_count, struct iface_info *infos, char *ipv_type);
+void	hostname_info(char source_ip[IPV4_LENGTH]);
 
 /******************************************************************************/
 
-/* traverse through linked list which contains nodes about interface info;
- * return an index for a name match, to update missing info (IPv4 / IPv6 / MAC);
+/* return an index for a name match to update missing info (IPv4 / IPv6 / MAC);
+ * else add new interface;
  */
 
 static
-int add_or_update_ifc(struct iface_info *infos, int *count, const char *name)
+int add_ifc(struct iface_info *infos, int *count, const char *ifc_name)
 {
 	for (int i = 0; i < *count; i++)
 	{
-		if (ft_strncmp(infos[i].name, name, ft_strlen(name)) == 0)
+		if (ft_strncmp(infos[i].ifc_name, ifc_name, ft_strlen(ifc_name)) == 0)
 			return i;
 	}
-	ft_strlcpy(infos[*count].name, name, IFNAMSIZ);
+	ft_strlcpy(infos[*count].ifc_name, ifc_name, IFNAMSIZ);
 	return (*count)++;
 }
 
-/* store data if linked list contains a node with MAC info about interface;
- * validate target's MAC after retrieving info;
- */
+/* store MAC address when linked list contains a node with MAC info about interface */
 
 static
-void	mac_info(struct ifaddrs *ifa, struct ifaddrs **target_mac_ifc,
-					struct iface_info *infos, t_addr *addr_data)
+void	mac_info(struct ifaddrs *ifa, struct iface_info *infos)
 {
+	//TODO: check casting
 	struct sockaddr_ll *ifc_addr = (struct sockaddr_ll *)ifa->ifa_addr;
 
 	uint8_t *ifc_mac_addr = (uint8_t *)&ifc_addr->sll_addr;
 	for (unsigned int i = 0; i < ifc_addr->sll_halen; ++i)
 		infos->mac[i] = ifc_mac_addr[i];
-
-	// validation
-	for (unsigned int i = 0; i < ifc_addr->sll_halen; ++i)
-	{
-		if (addr_data->mac_addr_target[i] != ifc_mac_addr[i])
-			return ;
-	}
-	*target_mac_ifc = ifa;
-
-	// store MAC address of the interface for initialization of arp / eth header
-	for (int i = 0; i < ifc_addr->sll_halen; i++)
-		addr_data->ifc_mac[i] = ifc_addr->sll_addr[i];
 }
 
-/* store data if linked list contains a node with IPv4 info about interface;
- * validate target's IP after retrieving info;
+/* store data if linked list contains a node with IPv4 info about specific interface;
+ * select active interface;
  */
 
 static
-void	ipv4_info(struct ifaddrs *ifa, struct ifaddrs **target_ip_ifc,
-	       struct iface_info *infos, t_addr *addr_data)
+void	add_ipv4_info(struct ifaddrs *ifa, struct iface_info *infos)
 {
 	struct sockaddr_in *addr = (struct sockaddr_in *)ifa->ifa_addr;
 	if (inet_ntop(AF_INET, &addr->sin_addr, infos->ipv4, INET_ADDRSTRLEN) == NULL)
 	{
-		fprintf(stderr, "\nFailed to retrieve IP address. Exiting ...\n");
+		fprintf(stderr, "\nFailed to retrieve IP address.\n");
 		return ;
 	}
 	if (!(ifa->ifa_flags & IFF_UP))
@@ -64,27 +54,17 @@ void	ipv4_info(struct ifaddrs *ifa, struct ifaddrs **target_ip_ifc,
 	else
 		infos->is_up = true;
 	infos->has_ipv4 = true;
-
-	// validation
-	uint8_t *ifc_ip_addr = (uint8_t *)&addr->sin_addr;
-	uint8_t *target_ip_addr = addr_data->ipv4_addr[1];
-	for (unsigned int i = 0; i < sizeof(struct in_addr); ++i)
-	{
-		if (target_ip_addr[i] != ifc_ip_addr[i])
-			return ;
-	}
-	*target_ip_ifc = ifa;
 }
 
-/* store data if linked list contains a node with IPv6 info about interface */
+/* store data if linked list contains a node with IPv6 info about specific interface */
 
 static
-void	ipv6_info(struct ifaddrs *ifa, struct iface_info *infos)
+void	add_ipv6_info(struct ifaddrs *ifa, struct iface_info *infos)
 {
 	struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)ifa->ifa_addr;
 	if (inet_ntop(AF_INET6, &addr6->sin6_addr, infos->ipv6, INET6_ADDRSTRLEN) == NULL)
 	{
-		fprintf(stderr, "\nFailed to retrieve IP address. Exiting ...\n");
+		fprintf(stderr, "\nFailed to retrieve IP address.\n");
 		return ;
 	}
 	if (!(ifa->ifa_flags & IFF_UP))
@@ -94,71 +74,101 @@ void	ipv6_info(struct ifaddrs *ifa, struct iface_info *infos)
 	infos->has_ipv6 = true;
 }
 
-/* check that target's IP and MAC adresseses are present on LAN;
- * if successful, return index of interface;
+/* find (active) interface which has the highest value of received bytes */
+
+static
+struct ifaddrs	*find_active_ifc(t_addr *addr_data, struct ifaddrs *ifa, unsigned int *max_rx_bytes, uint8_t idx)
+{
+	if (ifa->ifa_data == NULL)
+		return (NULL);
+	struct rtnl_link_stats *stats = ifa->ifa_data;
+	if (*max_rx_bytes < stats->rx_bytes)
+	{
+		*max_rx_bytes = stats->rx_bytes;
+		addr_data->idx_active_ifc = idx;
+		return (ifa);
+	}
+	return (NULL);
+}
+
+/* verify that active interface is available;
+ * if successful, return index/descriptor of interface;
  */
 
 static
-int	verify_ifc(struct ifaddrs *target_ip_ifc, struct ifaddrs *target_mac_ifc)
+int	verify_ifc(struct ifaddrs *active_ifc)
 {
-	// validating target IP and MAC address on available interfaces
-	if (target_ip_ifc == NULL || target_mac_ifc == NULL)
+	// validating host's interface availability
+	if (active_ifc == NULL)
 	{
-		fprintf(stderr, "\nUnsuccessful at validating presence of target IP address on LAN. Exiting ...\n");
+		fprintf(stderr, "\nUnsuccessful at validating presence of active interface. Exiting ...\n");
 		return (ERROR);
 	}
-	fprintf(stdout, "*** Found a match of target IP address on interface: %-8s ***\n", target_ip_ifc->ifa_name);
+	fprintf(stdout, "Found available interface: %-8s\n", active_ifc->ifa_name);
 
-	int if_index = if_nametoindex(target_ip_ifc->ifa_name);
+	int if_index = if_nametoindex(active_ifc->ifa_name);
 	if (if_index == -1) {
-		perror("Failed to retrieve interface index: ");
+		fprintf(stderr, "Failed to retrieve interface index. Exiting... \n");
 		return (ERROR);
 	}
 
-#if VERBOSE == 1
-	printf("Success: Interface index retrieved: %d\n", if_index);
+#if DEBUG == 1
+	fprintf(stdout, "Interface index retrieved: %d\n", if_index);
 #endif
 
 	return if_index;
 }
 
-/// @brief get information of the local network
-/// @param addr_data 
-/// @return Interface index on success or ERROR
-
-int	retrieve_LAN_info(t_addr *addr_data)
+int	retrieve_host_LAN_info(t_addr *addr_data)
 {
 	struct iface_info infos[MAX_IFACES];
-	struct ifaddrs *ifaddr, *target_ip_ifc = NULL, *target_mac_ifc = NULL;
+	struct ifaddrs *ifaddr, *active_ifc = NULL;
 	int iface_count = 0;
+	unsigned int current_rx = 0;
 
 	if (getifaddrs(&ifaddr) == -1)
 	{
-		perror("getifaddrs");
+		fprintf(stderr, "\ngetifaddrs failed. Exiting ...\n");
 		return (ERROR);
 	}
 
-	printf("Retrieving LAN information ...\n");
+#if VERBOSE == 1
+	fprintf(stdout, "Retrieving interface address table information ...\n");
+#endif
+	/* traverse through linked list which contains nodes about interface info */
 	for (struct ifaddrs *ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
 	{
-		int idx = add_or_update_ifc(infos, &iface_count, ifa->ifa_name);
+		int idx = add_ifc(infos, &iface_count, ifa->ifa_name);
 		int family = ifa->ifa_addr->sa_family;
 		if (family == AF_PACKET)
-			mac_info(ifa, &target_mac_ifc, &infos[idx], addr_data);
+		{
+			mac_info(ifa, &infos[idx]);
+			active_ifc = find_active_ifc(addr_data, ifa, &current_rx, (uint8_t)idx);
+		}
 		else if (family == AF_INET)
-			ipv4_info(ifa, &target_ip_ifc, &infos[idx], addr_data);
+			add_ipv4_info(ifa, &infos[idx]);
 		else if (family == AF_INET6)
-			ipv6_info(ifa, &infos[idx]);
+			add_ipv6_info(ifa, &infos[idx]);
 	}
 
 #if VERBOSE == 1
-	fprintf(stdout, "Displaying LAN information:\n");
+	fprintf(stdout, "Displaying interface address table:\n");
 	display_LAN_info(iface_count, infos, "IPv4");
 	display_LAN_info(iface_count, infos, "IPv6");
 #endif
 
-	int if_index = verify_ifc(target_ip_ifc, target_mac_ifc);
+	int if_index = verify_ifc(active_ifc);
+	addr_data->socket_address.sll_ifindex = if_index;
+
+	print_MAC_addr("   MAC address of attacker:", ':', 
+			infos[addr_data->idx_active_ifc].mac);
+	fprintf(stdout, "\n   IP address of attacker: %s\n", 
+			infos[addr_data->idx_active_ifc].ipv4);
+
+#if VERBOSE == 1
+	hostname_info(infos[addr_data->idx_active_ifc].ipv4);
+#endif
 
 	freeifaddrs(ifaddr);
-	return (if_index);
+	return (0);
 }
