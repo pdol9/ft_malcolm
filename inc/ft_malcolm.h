@@ -1,18 +1,27 @@
 #ifndef FT_MALCOLM_H
 # define FT_MALCOLM_H
 
-/* ARP definitions */
+/* ARP predefined macros */
 
-# define PROTO_ARP		0x0806
-# define ARP_REPLY		0x02
-# define HW_TYPE		0x01
+//# define PACKET_BROADCAST	0x01			/* To all	*/
+//# define ARPOP_REPLY		0x02
+//# define ARPHRD_ETHER		0x01
+//# define ETH_P_ARP		0x0806
+//# define ETH_P_IP		0x0800
+//# define ETH_P_IPV6		0x86DD
+//# define ETH_ALEN		6			/* Octets/length in one ethernet addr	 */
+//# define ETH_HLEN		14			/* Total octets in header.	 */
+
+/* personal macros */
+
+# define HW_TYPE		ARPHRD_ETHER
+# define MAC_LENGTH		ETH_ALEN
+# define IPV4_LENGTH		sizeof (struct in_addr)
+# define BUF_SIZE		60
+# define ARP_PACKET_LEN		42
+# define MAX_IFACES		32
 
 # define ERROR			0x01
-# define BUF_SIZE		60
-# define MAC_LENGTH		6
-# define IPV4_LENGTH		4
-# define ETH_HEADER_LEN		14
-# define MAX_IFACES		32
 
 # include <stdio.h>
 # include <stdint.h>
@@ -67,7 +76,7 @@ typedef struct s_addr
 
 // common functions
 
-void	print_MAC_addr(const char *str, char ch, uint8_t arr[MAC_LENGTH]);
+void	print_MAC_addr(const char *msg, const char ch, const uint8_t arr[MAC_LENGTH]);
 void	verbose_header_info(t_addr *addr_data);
 
 #endif

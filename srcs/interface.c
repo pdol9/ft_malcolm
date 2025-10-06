@@ -3,7 +3,7 @@
 
 int	retrieve_host_LAN_info(t_addr *addr_data);
 void	display_LAN_info(int iface_count, struct iface_info *infos, char *ipv_type);
-void	hostname_info(char source_ip[IPV4_LENGTH]);
+void	hostname_info(char source_ip[IPV4_LENGTH], const char *host);
 
 /******************************************************************************/
 
@@ -28,10 +28,9 @@ int add_ifc(struct iface_info *infos, int *count, const char *ifc_name)
 static
 void	mac_info(struct ifaddrs *ifa, struct iface_info *infos)
 {
-	//TODO: check casting
 	struct sockaddr_ll *ifc_addr = (struct sockaddr_ll *)ifa->ifa_addr;
-
 	uint8_t *ifc_mac_addr = (uint8_t *)&ifc_addr->sll_addr;
+
 	for (unsigned int i = 0; i < ifc_addr->sll_halen; ++i)
 		infos->mac[i] = ifc_mac_addr[i];
 }
@@ -98,7 +97,7 @@ struct ifaddrs	*find_active_ifc(t_addr *addr_data, struct ifaddrs *ifa, unsigned
 static
 int	verify_ifc(struct ifaddrs *active_ifc)
 {
-	// validating host's interface availability
+	/* validating host's interface availability */
 	if (active_ifc == NULL)
 	{
 		fprintf(stderr, "\nUnsuccessful at validating presence of active interface. Exiting ...\n");
@@ -158,15 +157,14 @@ int	retrieve_host_LAN_info(t_addr *addr_data)
 #endif
 
 	int if_index = verify_ifc(active_ifc);
+	if (if_index == ERROR)
+		return (ERROR);
 	addr_data->socket_address.sll_ifindex = if_index;
 
-	print_MAC_addr("   MAC address of attacker:", ':', 
-			infos[addr_data->idx_active_ifc].mac);
-	fprintf(stdout, "\n   IP address of attacker: %s\n", 
-			infos[addr_data->idx_active_ifc].ipv4);
-
 #if VERBOSE == 1
-	hostname_info(infos[addr_data->idx_active_ifc].ipv4);
+	hostname_info(infos[addr_data->idx_active_ifc].ipv4, "attacker");
+	hostname_info(addr_data->ipv4_name[1], "target");
+	hostname_info(addr_data->ipv4_name[0], "spoofed target");
 #endif
 
 	freeifaddrs(ifaddr);

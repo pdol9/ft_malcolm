@@ -12,8 +12,8 @@ CFLAGS		+= -Wall -Wextra -Werror $(GDB) -DVERBOSE=$(VERBOSE) -DDEBUG=$(DEBUG)
 INC		:= ./inc
 HEADER		:= $(INC)/ft_malcolm.h
 DIR		:= ./srcs
-SRCS		:= aux_functions.c init.c interface.c broadcast.c main.c
-BONUS_SRC	:= verbose_out.c LAN_info.c hostname.c
+SRCS		:= verbose_out.c aux_functions.c init.c interface.c broadcast.c main.c
+BONUS_SRC	:= LAN_info.c hostname.c
 OBJ		:= $(patsubst %.c, $(DIR)/%.o, $(SRCS))
 BONUS_OBJ	:= $(patsubst %.c, $(DIR)/%.o, $(BONUS_SRC))
 
@@ -68,6 +68,7 @@ bonus:
 run: all
 	sudo ./$(NAME) $(ARG)
 
-do:
+# test with debugging enabled
+do:	clean 
 	$(MAKE) VERBOSE="1" DEBUG="1" GDB="-g" SRCS="$(SRCS) $(BONUS_SRC)" all
 	sudo ./$(NAME) $(ARG)

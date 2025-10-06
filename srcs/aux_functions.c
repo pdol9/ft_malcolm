@@ -4,7 +4,7 @@
 /* print MAC address to the standard output */
 
 inline
-void	print_MAC_addr(const char *msg, char ch, uint8_t arr[MAC_LENGTH])
+void	print_MAC_addr(const char *msg, const char ch, const uint8_t arr[MAC_LENGTH])
 {
 	fprintf(stdout, "%s %02x%c%02x%c%02x%c%02x%c%02x%c%02x",
 			msg, arr[0],ch, arr[1],ch, arr[2],ch, arr[3],ch, arr[4],ch, arr[5]);
@@ -58,12 +58,11 @@ int validate_input(char **argv, int argc, t_addr *data)
 #endif
 	fprintf(stdout, "Start of the program!\nValidating input parameters ...\n");
 
-	//TODO: check error testing
-	/* validate MAC format */
+	/* validate MAC length format */
 	if (ft_strlen(argv[2]) != 17 || ft_strlen(argv[4]) != 17)
 	{
-		fprintf(stderr, "Invalid MAC address. Use the following format:"
-				" aa:bb:cc:dd:ee:ff\n");
+		fprintf(stderr, "Invalid MAC address length. Use the following format: "
+				"1a:2b:3c:4d:5e:6f\n");
 		return (ERROR);
 	}
 
@@ -72,26 +71,25 @@ int validate_input(char **argv, int argc, t_addr *data)
 		|| (mac_pton(argv[4], data->mac_addr_target)) == ERROR)
 	{
 		fprintf(stderr, "Invalid MAC address. Use valid format: "
-				"aa:bb:cc:dd:ee:ff\n");
+				"1a:2b:3c:4d:5e:6f\n");
 		return (ERROR);
 	}
 
 	/* validate IPv4 address */
-	int s;
-
 	for (int i = 1; i < 4; i += 2)
 	{
-		// set source / target address
+		// set source & target address
 		int j = i / 3;
-		s = inet_pton(AF_INET, argv[i], data->ipv4_addr[j]);
+
+		int s = inet_pton(AF_INET, argv[i], data->ipv4_addr[j]);
 		if (s <= 0)
 		{
-			fprintf(stderr, "unknown host or invalid IP address: (%s)\n", argv[i]);
+			fprintf(stderr, "Invalid IP address: (%s)\n", argv[i]);
 			return (ERROR);
 		}
 		if (inet_ntop(AF_INET, data->ipv4_addr[j], data->ipv4_name[j], INET_ADDRSTRLEN) == NULL)
 		{
-			fprintf(stderr, "unknown host or invalid IP address: (%s)\n", argv[i]);
+			fprintf(stderr, "Invalid IP address: (%s)\n", argv[i]);
 			return (ERROR);
 		}
 	}
