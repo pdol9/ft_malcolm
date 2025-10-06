@@ -2,12 +2,16 @@
 
 ## Introduction
 
-This is a networking project based on ARP and the 2nd (Data Link) Layer of OSI
-model. Purpose of this project is to move from abstract network theory to visible,
-verifiable evidence of how link-layer trust breaks down. Observing a spoofed IP–MAC
-pair in a target’s ARP table is a concrete demonstration that an attacker can
-mislead devices about “who” is on the LAN. It also serves as an introduction to
-`man in the middle attack`.
+This is a networking project based on ARP (Address Resolution Protocol). ARP
+operates between OSI Layers 2 and 3 - it’s a link-layer protocol that maps
+Layer-3 (IPv4) addresses to Layer-2 (MAC) addresses, bridging the Data Link and
+Network layers.
+
+Purpose of this project is to move from abstract network theory to visible,
+verifiable evidence of how link-layer trust breaks down. Observing a spoofed
+IP–MAC pair in a target’s ARP table is a concrete demonstration that an attacker
+can mislead devices about “who” is on the LAN. It also serves as an introduction
+to `man in the middle attack`.
 
 ## Description
 
@@ -38,7 +42,7 @@ only interact with higher-level sockets. By working at the raw socket level, the
 program bypasses the OS’s default header handling and directly crafts packets at
 the data-link layer, allowing full control over ARP and Ethernet fields.
 
-Nontheless, many OSes ignore unsolicited ARP replies (the designated method to
+Nonetheless, many OSes ignore unsolicited ARP replies (the designated method to
 achieve the objective) for unknown IPs unless the target actually looked up that
 IP. The typical attack is to reply for an IP that the victim will use (e.g.,
 gateway IP) or to reply just after they send a request for that IP.
@@ -89,7 +93,7 @@ itself multiple times — is actually refreshing its presence on the LAN. It
 is called a gratuitous ARP (ARP announcement).
 
 A host tells the network “192.168.124.108 is at <my MAC>”, phrased as a
-“who-has myself” request. This way host updates switche's/router's (caches)
+“who-has myself” request. This way host updates switch's/router's (caches)
 about its own MAC binding. In addition, it warns of an IP conflict if another
 device replies.
 
